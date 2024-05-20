@@ -155,6 +155,7 @@ class CxTowerCommand(models.Model):
         column1="command_id",
         column2="variable_id",
     )
+    readonly = fields.Boolean(copy=False, readonly=True)
 
     @classmethod
     def _get_depends_fields(cls):

@@ -77,6 +77,7 @@ class TowerVariableValue(models.Model):
         store=True,
     )
     required = fields.Boolean()
+    readonly = fields.Boolean(copy=False, readonly=True)
 
     _sql_constraints = [
         (

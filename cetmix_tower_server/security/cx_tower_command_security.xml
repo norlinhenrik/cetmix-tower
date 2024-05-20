@@ -42,5 +42,14 @@
         <field name="groups" eval="[(4,ref('cetmix_tower_server.group_root'))]" />
     </record>
 
+    <record id="cx_tower_command_rule_readonly_xml_records" model="ir.rule">
+        <field name="name">Tower command: readonly</field>
+        <field name="model_id" ref="model_cx_tower_command" />
+        <field name="domain_force">[('readonly', '=', False)]</field>
+        <field name="perm_read" eval="0" />
+        <field name="perm_write" eval="1" />
+        <field name="perm_create" eval="1" />
+        <field name="perm_unlink" eval="0" />
+    </record>
 
 </odoo>
