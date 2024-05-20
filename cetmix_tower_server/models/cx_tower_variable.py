@@ -31,6 +31,7 @@ class TowerVariable(models.Model):
         string="Type",
     )
     note = fields.Text()
+    readonly = fields.Boolean(copy=False, readonly=True)
 
     _sql_constraints = [("name_uniq", "unique (name)", "Variable names must be unique")]
 
