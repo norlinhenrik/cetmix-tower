@@ -1,9 +1,10 @@
 # Do NOT update manually; changes here will be overwritten by Copier
-_commit: v1.7.0-185-g162de0f
+_commit: v1.7.0-248-gfba3cff
 _src_path: https://github.com/cetmix/cetmix-addons-repo-template.git
 additional_ruff_rules: []
 ci: GitHub
 convert_readme_fragments_to_markdown: true
+enable_checklog_odoo: false
 generate_requirements_txt: true
 github_check_license: true
 github_ci_extra_env: {}
@@ -19,7 +20,7 @@ org_name: Cetmix
 org_slug: cetmix
 rebel_module_groups: []
 repo_description: Cetmix Tower
-repo_name: Remote server management tools
+repo_name: Odoo bases server management tool
 repo_slug: cetmix-tower
 repo_website: https://cetmix.com
 use_pyproject_toml: false
