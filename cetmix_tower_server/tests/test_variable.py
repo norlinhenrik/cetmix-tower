@@ -23,7 +23,7 @@ class TestTowerVariable(TestTowerCommon):
         if server_ids:
             variable_records = server_ids.variable_value_ids
         else:
-            variable_records = self.VariableValues.search([("is_global", "=", True)])
+            variable_records = self.VariableValue.search([("is_global", "=", True)])
         len_vals = len(vals)
 
         # Ensure correct number of records
@@ -47,6 +47,9 @@ class TestTowerVariable(TestTowerCommon):
 
     def test_variable_values(self):
         """Test common variable operations"""
+
+        # -- 1 --
+        #  Server specific variables
 
         # Add two variables
         with Form(self.server_test_1) as f:
@@ -87,9 +90,17 @@ class TestTowerVariable(TestTowerCommon):
             with f.variable_value_ids.new() as line:
                 line.variable_id = self.variable_os
                 line.value_char = "Debian"
+
+            # Add an empty variable value
+            with f.variable_value_ids.new() as line:
+                line.variable_id = self.variable_url
             f.save()
 
-        vals = [(self.variable_os.id, "Debian"), (self.variable_version.id, "10.0")]
+        vals = [
+            (self.variable_os.id, "Debian"),
+            (self.variable_version.id, "10.0"),
+            (self.variable_url.id, False),
+        ]
         self.check_variable_values(vals=vals, server_ids=self.server_test_1)
 
         # Test 'get_variable_values' function
@@ -105,16 +116,15 @@ class TestTowerVariable(TestTowerCommon):
         var_version = res_vars["test_version"]
 
         self.assertIsNone(var_dir, msg="Variable 'dir' must be None")
-        self.assertIsNone(var_url, msg="Variable 'url' must be None")
+        self.assertFalse(var_url, msg="Variable 'url' must be False")
         self.assertEqual(var_os, "Debian", msg="Variable 'os' must be 'Debian'")
         self.assertEqual(var_version, "10.0", msg="Variable 'version' must be '10.0'")
 
-        # ***
-        # *** Test global variable values ***
-        # ***
+        # -- 2 --
+        # Test global variable values
 
         # Create a global value for the 'dir' variable
-        self.VariableValues.create(
+        self.VariableValue.create(
             {"variable_id": self.variable_dir.id, "value_char": "/global/dir"}
         )
         res = self.server_test_1.get_variable_values(
@@ -131,7 +141,7 @@ class TestTowerVariable(TestTowerCommon):
         self.assertEqual(
             var_dir, "/global/dir", msg="Variable 'dir' must be equal to '/global/dir'"
         )
-        self.assertIsNone(var_url, msg="Variable 'url' must be None")
+        self.assertFalse(var_url, msg="Variable 'url' must be False")
         self.assertEqual(var_os, "Debian", msg="Variable 'os' must be 'Debian'")
         self.assertEqual(var_version, "10.0", msg="Variable 'version' must be '10.0'")
 
@@ -157,7 +167,7 @@ class TestTowerVariable(TestTowerCommon):
         self.assertEqual(
             var_dir, "/opt/odoo", msg="Variable 'dir' must be equal to '/opt/odoo'"
         )
-        self.assertIsNone(var_url, msg="Variable 'url' must be None")
+        self.assertFalse(var_url, msg="Variable 'url' must be False")
         self.assertEqual(var_os, "Debian", msg="Variable 'os' must be 'Debian'")
         self.assertEqual(var_version, "10.0", msg="Variable 'version' must be '10.0'")
 
@@ -183,7 +193,7 @@ class TestTowerVariable(TestTowerCommon):
             f.save()
 
         # Create a global value for the 'Version' variable
-        self.VariableValues.create(
+        self.VariableValue.create(
             {"variable_id": self.variable_version.id, "value_char": "10.0"}
         )
 
@@ -219,7 +229,7 @@ class TestTowerVariable(TestTowerCommon):
             Arg: (cx.tower.variable) variable rec
             Returns: (int) record count
             """
-            return self.VariableValues.search_count([("variable_id", "=", variable.id)])
+            return self.VariableValue.search_count([("variable_id", "=", variable.id)])
 
         # Get variable values count before adding variables to server
         count_dir_before = get_value_count(self.variable_dir)
@@ -275,7 +285,7 @@ class TestTowerVariable(TestTowerCommon):
         """Test what happens when variable value 'global' setting is togged"""
 
         variable_meme = self.Variable.create({"name": "meme"})
-        variable_value_pepe = self.VariableValues.create(
+        variable_value_pepe = self.VariableValue.create(
             {"variable_id": variable_meme.id, "value_char": "Pepe"}
         )
 
@@ -292,7 +302,7 @@ class TestTowerVariable(TestTowerCommon):
 
         # Try to create another global value for the same variable
         with self.assertRaises(ValidationError) as err:
-            self.VariableValues.create(
+            self.VariableValue.create(
                 {"variable_id": variable_meme.id, "value_char": "Doge"}
             )
 
@@ -329,7 +339,7 @@ class TestTowerVariable(TestTowerCommon):
         # Create variables assigned to server
         # Private
         variable_private = self.Variable.create({"name": "Private Variable"})
-        variable_private_value = self.VariableValues.create(
+        variable_private_value = self.VariableValue.create(
             {
                 "variable_id": variable_private.id,
                 "server_id": server.id,
@@ -339,7 +349,7 @@ class TestTowerVariable(TestTowerCommon):
 
         # Global
         variable_global = self.Variable.create({"name": "Variable Global"})
-        variable_global_value = self.VariableValues.create(
+        variable_global_value = self.VariableValue.create(
             {
                 "variable_id": variable_global.id,
                 "is_global": True,
@@ -384,7 +394,7 @@ class TestTowerVariable(TestTowerCommon):
 
         # Check that user_bob can't create new variable values
         with self.assertRaises(AccessError):
-            self.VariableValues.with_user(user_bob).create(
+            self.VariableValue.with_user(user_bob).create(
                 {
                     "variable_id": variable_private.id,
                     "server_id": server.id,
@@ -399,7 +409,7 @@ class TestTowerVariable(TestTowerCommon):
         variable_new_global_as_bob = self.Variable.with_user(user_bob).create(
             {"name": "New Global Variable"}
         )
-        variable_new_global_value_as_bob = self.VariableValues.with_user(
+        variable_new_global_value_as_bob = self.VariableValue.with_user(
             user_bob
         ).create(
             {
@@ -417,7 +427,7 @@ class TestTowerVariable(TestTowerCommon):
         variable_new_private_as_bob = self.Variable.with_user(user_bob).create(
             {"name": "New Private Variable"}
         )
-        variable_vale_new_private_as_bob = self.VariableValues.with_user(
+        variable_vale_new_private_as_bob = self.VariableValue.with_user(
             user_bob
         ).create(
             {
@@ -611,12 +621,12 @@ class TestTowerVariable(TestTowerCommon):
         variable_meme = self.Variable.create(
             {"name": "Meme Variable", "reference": "meme_variable"}
         )
-        global_value = self.VariableValues.create(
+        global_value = self.VariableValue.create(
             {"variable_id": variable_meme.id, "value_char": "Memes Globalvs"}
         )
 
         # -- 1 -- Get value for Server with no server value defined
-        server_result = self.VariableValues.get_by_variable_reference(
+        server_result = self.VariableValue.get_by_variable_reference(
             variable_meme.reference, server_id=self.server_test_1.id
         )
         self.assertIsNone(server_result.get("server"))
@@ -624,14 +634,14 @@ class TestTowerVariable(TestTowerCommon):
         self.assertEqual(server_result.get("global"), global_value.value_char)
 
         # -- 2 -- Add server value and try again
-        server_value = self.VariableValues.create(
+        server_value = self.VariableValue.create(
             {
                 "variable_id": variable_meme.id,
                 "value_char": "Memes Servervs",
                 "server_id": self.server_test_1.id,
             }
         )
-        server_result = self.VariableValues.get_by_variable_reference(
+        server_result = self.VariableValue.get_by_variable_reference(
             variable_meme.reference, server_id=self.server_test_1.id
         )
         self.assertEqual(server_result.get("server"), server_value.value_char)
@@ -639,7 +649,7 @@ class TestTowerVariable(TestTowerCommon):
         self.assertIsNone(server_result.get("server_template"))
 
         # -- 3 -- Do not fetch global value now
-        server_result = self.VariableValues.get_by_variable_reference(
+        server_result = self.VariableValue.get_by_variable_reference(
             variable_meme.reference, server_id=self.server_test_1.id, check_global=False
         )
         self.assertIsNone(server_result.get("global"))
@@ -647,14 +657,14 @@ class TestTowerVariable(TestTowerCommon):
         self.assertIsNone(server_result.get("server_template"))
 
         # -- 4 -- Check server template value
-        server_template_value = self.VariableValues.create(
+        server_template_value = self.VariableValue.create(
             {
                 "variable_id": variable_meme.id,
                 "value_char": "Memes Servervs Templatvs",
                 "server_template_id": self.server_template_sample.id,
             }
         )
-        server_result = self.VariableValues.get_by_variable_reference(
+        server_result = self.VariableValue.get_by_variable_reference(
             variable_meme.reference, server_template_id=self.server_template_sample.id
         )
         self.assertEqual(server_result.get("global"), global_value.value_char)
