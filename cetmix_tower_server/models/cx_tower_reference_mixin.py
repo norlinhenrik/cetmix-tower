@@ -50,7 +50,7 @@ class CxTowerReferenceMixin(models.AbstractModel):
 
         Returns:
             dict: Model values dictionary:
-            {model_name: [parent_model, relation_field, custom_suffix]}
+            {model_name: [parent_model, relation_field]}
         """
         return {}
 
@@ -75,10 +75,13 @@ class CxTowerReferenceMixin(models.AbstractModel):
         else:
             # Modify the pattern to be used in `sub`
             inner_pattern = reference_pattern[1:-1]
-            reference = re.sub(
-                rf"[^{inner_pattern}]",
-                "",
-                reference_source.strip().replace(" ", "_").lower(),
+            reference = (
+                re.sub(
+                    rf"[^{inner_pattern}]",
+                    "",
+                    reference_source.strip().replace(" ", "_").lower(),
+                )
+                or self._get_model_generic_reference()
             )
 
         # Check if the same reference already exists and add a suffix if yes
@@ -153,9 +156,9 @@ class CxTowerReferenceMixin(models.AbstractModel):
                 self._name
             )
             if auto_generate_settings:
-                parent_model, relation_field, suffix = auto_generate_settings
+                parent_model, relation_field = auto_generate_settings
                 vals_list = self._pre_populate_references(
-                    parent_model, relation_field, vals_list, suffix
+                    parent_model, relation_field, vals_list
                 )
 
             # Fix or create references
@@ -164,11 +167,12 @@ class CxTowerReferenceMixin(models.AbstractModel):
                     continue
 
                 # Remove leading and trailing whitespaces from name
-                vals_name = vals.get("name", "")
-                name = vals_name.strip()
+                vals_name = vals.get("name")
+                name = vals_name.strip() if vals_name else vals_name
 
                 # Remove leading and trailing whitespaces from reference
-                reference = vals.get("reference", "").strip()
+                vals_reference = vals.get("reference")
+                reference = vals_reference.strip() if vals_reference else vals_reference
 
                 # Nothing can be done if no name or reference is provided
                 if not name and not reference:
@@ -268,6 +272,22 @@ class CxTowerReferenceMixin(models.AbstractModel):
             default["reference"] = self._generate_or_fix_reference(default["name"])
         return super().copy(default=default)
 
+    def _get_model_generic_reference(self):
+        """Get generic reference for current model.
+        Generic references are used as a fallback in the automatic
+        reference generation.
+        When a reference cannot be generated neither from the 'reference'
+        nor from the 'name' field values.
+
+        Eg for the 'cx.tower.plan' model such reference will look like
+        'tower_plan'.
+
+        Returns:
+            Char: generated prefix
+        """
+        model_prefix = self._name.replace("cx.tower.", "").replace(".", "_")
+        return model_prefix
+
     def get_by_reference(self, reference):
         """Get record based on its reference.
 
@@ -347,7 +367,7 @@ class CxTowerReferenceMixin(models.AbstractModel):
         return {line.id: line.reference for line in lines if line.reference}
 
     @api.model
-    def _pre_populate_references(self, model_name, field_name, vals_list, suffix=""):
+    def _pre_populate_references(self, model_name, field_name, vals_list):
         """
         Populates reference fields in a list of dictionaries (vals_list)
         intended for record creation.
@@ -366,8 +386,6 @@ class CxTowerReferenceMixin(models.AbstractModel):
                               containing the related record's ID.
             vals_list (list of dict): A list of dictionaries where each dictionary
                                represents values for a new record.
-            suffix (str, optional): A suffix to append to each generated reference.
-                               Defaults to an empty string.
 
         Returns:
             list: The modified `vals_list`, with a unique 'reference'
@@ -377,6 +395,9 @@ class CxTowerReferenceMixin(models.AbstractModel):
         # Extract parent record references from vals_list
         parent_record_refs = self._prepare_references(model_name, field_name, vals_list)
         line_index_dict = defaultdict(int)
+
+        # Used to make reference more readable
+        model_reference = self._get_model_generic_reference()
 
         # Populate vals with references
         for vals in vals_list:
@@ -394,11 +415,11 @@ class CxTowerReferenceMixin(models.AbstractModel):
                 line_index = line_index_dict[record_id]
                 vals[
                     "reference"
-                ] = f"{parent_record_refs[record_id]}_{suffix}_{line_index}"
+                ] = f"{parent_record_refs[record_id]}_{model_reference}_{line_index}"
             else:
                 # Handle cases where the field is not present
                 line_index_dict["no_record"] += 1
                 line_index = line_index_dict["no_record"]
-                vals["reference"] = f"no_{suffix}_{line_index}"
+                vals["reference"] = f"no_{model_reference}_{line_index}"
 
         return vals_list
