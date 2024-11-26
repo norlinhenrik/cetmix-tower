@@ -17,7 +17,7 @@ Cetmix Tower Server YAML
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-cetmix%2Fcetmix--tower-lightgray.png?logo=github
-    :target: https://github.com/cetmix/cetmix-tower/tree/14.0-dev/cetmix_tower_yaml
+    :target: https://github.com/cetmix/cetmix-tower/tree/14.0/cetmix_tower_yaml
     :alt: cetmix/cetmix-tower
 
 |badge1| |badge2| |badge3|
@@ -27,14 +27,14 @@ Tower. <https://cetmix.com/tower>`__
 
 Following data models are supported:
 
--  Commands
+- Commands
 
 Coming soon:
 
--  Flight Plans
--  Variables
--  File Templates
--  Server Templates
+- Flight Plans
+- Variables
+- File Templates
+- Server Templates
 
 **Table of contents**
 
@@ -53,26 +53,70 @@ such data such as ``YAML``. 
 Configuration
 =============
 
-No configuration is required.
+To allow access to YAML features:
+
+- Go to "Settings -> Users" and select a user.
+- Scroll to the "YAML export/import" section.
+- Activate "Allow YAML export" and/or "Allow YAML" import options.
 
 Usage
 =====
 
-Data Export/Import
-------------------
+Export into a YAML file
+-----------------------
 
 To export data into YAML format:
 
--  Open the record you would like to export
--  Copy YAML code from the text field located under the "YAML" tab in
-   the form view. Activate "Explode" switch if you want to export data
-   in `exploded mode <#exploded-mode>`__
+- Open the record you would like to export.
+- On the "YAML" tab click the "Export YAML" button.
+- YAML export wizard will open:
+
+  - Activate "Explode Child Records" switch if you want to export data
+    in `exploded mode <#exploded-mode>`__.
+  - Click "Generate YAML File" button to save YAML file.
+
+- File download wizard will open:
+
+  - Click on the file name to save YAML file.
+  - Click the "Close" button to close the file download wizard.
+
+Import from a YAML file
+-----------------------
 
 To import data from YAML:
 
--  Open the record you would like to import
--  Insert YAML code from in the text field located under the "YAML" tab
-   in the form view.
+- Go to "Cetmix Tower -> Tools -> Import YAML" menu.
+- Upload a YAML file and click the "Process" button.
+- YAML import wizard will open.
+
+  - If a record that is specified in the YAML file exists, there will be
+    an "Update Existing Record" checkbox available.
+  - Uncheck the "Update Existing Record" checkbox if you want to create
+    a new record instead of updating the existing one.
+
+- Click one of the available action buttons:
+
+  - "Update Existing Record" to update the existing record.
+  - "Open Existing Record" to open the record that is specified in the
+    YAML file.
+  - "Create New Record" to create a new record.
+
+Important things to remember during import:
+
+- If a record that is specified in the YAML file does not exist in Odoo,
+  new record will be created.
+- If a record that is specified in the YAML file exists in Odoo and the
+  "Update Existing Record" checkbox is checked, it will be updated with
+  new values from YAML.
+- If a record that is specified in the YAML file exists in Odoo and the
+  "Update Existing Record" checkbox is not checked, new record will be
+  created.
+- Following model records will be always tried to be resolved and
+  updated even if "Create New Record" action is used:
+
+  - Variables
+  - Operating Systems
+  - Tags
 
 Data Export/Import Modes
 ------------------------
@@ -124,7 +168,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/cetmix/cetmix-tower/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us to smash it by providing a detailed and welcomed
-`feedback <https://github.com/cetmix/cetmix-tower/issues/new?body=module:%20cetmix_tower_yaml%0Aversion:%2014.0-dev%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/cetmix/cetmix-tower/issues/new?body=module:%20cetmix_tower_yaml%0Aversion:%2014.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -139,6 +183,6 @@ Authors
 Maintainers
 -----------
 
-This module is part of the `cetmix/cetmix-tower <https://github.com/cetmix/cetmix-tower/tree/14.0-dev/cetmix_tower_yaml>`_ project on GitHub.
+This module is part of the `cetmix/cetmix-tower <https://github.com/cetmix/cetmix-tower/tree/14.0/cetmix_tower_yaml>`_ project on GitHub.
 
 You are welcome to contribute.
