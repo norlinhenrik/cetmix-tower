@@ -1,5 +1,5 @@
 # Do NOT update manually; changes here will be overwritten by Copier
-_commit: v1.7.0-248-gfba3cff
+_commit: v1.7.0-262-ga2c21e9
 _src_path: https://github.com/cetmix/cetmix-addons-repo-template.git
 additional_ruff_rules: []
 ci: GitHub
@@ -14,7 +14,7 @@ github_enable_stale_action: true
 github_enforce_dev_status_compatibility: true
 github_odoo_ee: false
 include_wkhtmltopdf: false
-odoo_test_flavor: Both
+odoo_test_flavor: OCB
 odoo_version: 14.0
 org_name: Cetmix
 org_slug: cetmix
