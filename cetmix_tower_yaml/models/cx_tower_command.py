@@ -22,5 +22,6 @@ class CxTowerCommand(models.Model):
             "flight_plan_id",
             "code",
             "variable_ids",
+            "readonly",
         ]
         return res
